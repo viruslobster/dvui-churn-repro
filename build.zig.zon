@@ -1,0 +1,10 @@
+.{
+    .name = .dvui_churn_repro,
+    .fingerprint = 0xee21decbdc43bef9,
+    .version = "0.0.0",
+    .minimum_zig_version = "0.16.0",
+    .dependencies = .{
+        .dvui = .{ .path = "../dvui" },
+    },
+    .paths = .{ "build.zig", "build.zig.zon", "repro.zig" },
+}
