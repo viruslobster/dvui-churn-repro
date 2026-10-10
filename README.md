@@ -41,7 +41,42 @@ So they constantly need to alloc memory from the backing allocator.
 To repro:
 
 ```fish
-> git clone $this-project
+> git clone git@github.com:viruslobster/dvui-churn-repro.git
 > git clone git@github.com:david-vanderson/dvui.git
 > cd dvu-churn-repro && zig build run &| grep -v resize
+```
+
+This fixes the problem:
+```
+diff --git a/src/Window.zig b/src/Window.zig
+index 39ce183bd2..0e58c0625f 100644
+--- a/src/Window.zig
++++ b/src/Window.zig
+@@ -1816,23 +1816,9 @@
+     // event to the end this will print a debug message.
+     self.positionMouseEventRemove();
+
+-    {
+-        const cap = self._arena.queryCapacity();
+-        //std.log.debug("_arena capacity {d}", .{cap});
+-        _ = self._arena.reset(.{ .retain_with_limit = cap - @divTrunc(cap, 10) });
+-    }
+-
+-    {
+-        const cap = self._lifo_arena.queryCapacity();
+-        //std.log.debug("_lifo_arena capacity {d}", .{cap});
+-        _ = self._lifo_arena.reset(.{ .retain_with_limit = cap - @divTrunc(cap, 10) });
+-    }
+-
+-    {
+-        const cap = self._widget_stack.arena.queryCapacity();
+-        //std.log.debug("_widget_stack capacity {d}", .{cap});
+-        _ = self._widget_stack.reset(.{ .retain_with_limit = cap - @divTrunc(cap, 10) });
+-    }
++    _ = self._arena.reset(.retain_capacity);
++    _ = self._lifo_arena.reset(.retain_capacity);
++    _ = self._widget_stack.reset(.retain_capacity);
+
+     // Do this here so subwindows that didn't show are gone for events.
+     // Prevent mouse event being tagged with a menu that went away this frame.
 ```
